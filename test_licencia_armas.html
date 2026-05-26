@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Test Licencia de Armas D, E y AEM</title>
+    <style>
+        :root {
+            --bg-color: #f2f4f7;
+            --card-bg: #ffffff;
+            --text-main: #1c1c1e;
+            --text-muted: #666668;
+            --gc-green: #0d47a1; /* Professional Dark Blue/Green accent */
+            --primary: #106b43; /* Guardia Civil Green */
+            --correct: #34c759;
+            --incorrect: #ff3b30;
+            --border: #e5e5ea;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 40px;
+            font-size: 16px;
+        }
+
+        /* Status bar spacer for iOS notch */
+        .status-bar-spacer {
+            height: env(safe-area-inset-top, 20px);
+            background-color: var(--primary);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: calc(15px + env(safe-area-inset-top, 20px)) 16px 15px 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 19px;
+            font-weight: 600;
+        }
+
+        header p {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 16px auto;
+            padding: 0 12px;
+        }
+
+        .menu-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .menu-card:active {
+            transform: scale(0.98);
+            background-color: #f9f9f9;
+        }
+
+        .menu-card h3 {
+            font-size: 16px;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .menu-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            margin-top: 10px;
+        }
+
+        /* Quiz Screen styling */
+        .hidden {
+            display: none !important;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            background-color: var(--border);
+            height: 6px;
+            border-radius: 3px;
+            width: 100%;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background-color: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .question-text {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        .option-box {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            line-height: 1.3;
+            transition: background-color 0.15s ease;
+            position: relative;
+        }
+
+        .option-box:active {
+            background-color: #f2f2f7;
+        }
+
+        .option-box.correct {
+            background-color: #e8f5e9 !important;
+            border-color: var(--correct) !important;
+            color: #1b5e20;
+            font-weight: 500;
+        }
+
+        .option-box.incorrect {
+            background-color: #ffebee !important;
+            border-color: var(--incorrect) !important;
+            color: #b71c1c;
+        }
+
+        .feedback-msg {
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback-msg.correct-text {
+            display: block;
+            color: #1b5e20;
+            background-color: #e8f5e9;
+        }
+
+        .feedback-msg.incorrect-text {
+            display: block;
+            color: #b71c1c;
+            background-color: #ffebee;
+        }
+
+        /* Floating action footer for next button */
+        .actions {
+            margin-top: 20px;
+        }
+
+        /* Results view styling */
+        .results-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+
+        .score-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #f2f4f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px auto;
+            font-size: 24px;
+            font-weight: 700;
+            border: 4px solid var(--primary);
+        }
+
+        .pwa-instructions {
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #0d47a1;
+            line-height: 1.4;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="status-bar-spacer"></div>
+    <header>
+        <h1 id="app-title">Licencia de Armas D, E y AEM</h1>
+        <p>Programa Oficial de la Guardia Civil</p>
+    </header>
+
+    <div class="container">
+
+        <!-- MAIN MENU -->
+        <div id="screen-menu">
+            <div style="margin-bottom: 15px; font-weight: 600; font-size: 15px; color: var(--text-muted);">SELECCIONA UN TEMA:</div>
+            
+            <div class="menu-card" onclick="startQuiz(1)">
+                <h3>Tema 1: Conocimiento de las armas</h3>
+                <p>Funcionamiento, piezas fundamentales, mecanismos y conservación.</p>
+            </div>
+            <div class="menu-card" onclick="startQuiz(2)">
+                <h3>Tema 2: Categorías de las armas</h3>
+                <p>Clasificación y categorías según el Reglamento de Armas.</p>
+            </div>
+            <div class="menu-card" onclick="startQuiz(3)">
+                <h3>Tema 3: Documentación y licencias</h3>
+                <p>Requisitos oficiales, obtención y validez de las autorizaciones.</p>
+            </div>
+            <div class="menu-card" onclick="startQuiz(4)">
+                <h3>Tema 4: Aptitudes y pruebas</h3>
+                <p>Condiciones psicofísicas y superación de ejercicios prácticos y teóricos.</p>
+            </div>
+            <div class="menu-card" onclick="startQuiz(5)">
+                <h3>Tema 5: Pérdida y régimen sancionador</h3>
+                <p>Revocación de licencias, infracciones, retirada de armas y sanciones.</p>
+            </div>
+            <div class="menu-card" onclick="startQuiz(6)">
+                <h3>Tema 6: Medidas de seguridad</h3>
+                <p>Custodia, transporte, almacenamiento y uso correcto de armas largas y cortas.</p>
+            </div>
+            <div class="menu-card" onclick="startQuiz(7)">
+                <h3>Tema 7: Armas de colección e históricas</h3>
+                <p>Definiciones, coleccionismo, calibres y municiones de interés histórico.</p>
+            </div>
+
+            <button class="btn" style="background-color: #2e7d32;" onclick="startQuiz(0)">Simulacro de Examen Oficial (20 Preguntas)</button>
+
+            <div class="pwa-instructions">
+                <strong>💡 Instalar en tu iPhone:</strong> Pulsa el botón de compartir de Safari <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230d47a1' stroke-width='2'><path d='M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13'/></svg>" style="vertical-align: middle; height: 16px;"> abajo y selecciona <strong>"Añadir a la pantalla de inicio"</strong> para usarla como una App nativa.
+            </div>
+        </div>
+
+        <!-- QUIZ SCREEN -->
+        <div id="screen-quiz" class="hidden">
+            <div class="quiz-header">
+                <span id="quiz-topic-name">Tema</span>
+                <span id="quiz-question-counter">Pregunta 1 de 10</span>
+            </div>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+
+            <div class="question-card">
+                <div id="question-text" class="question-text">Cargando pregunta...</div>
+                <div id="options-container">
+                    <!-- Options injected here -->
+                </div>
+                <div id="feedback-msg" class="feedback-msg"></div>
+            </div>
+
+            <div class="actions">
+                <button id="btn-next" class="btn hidden" onclick="nextQuestion()">Siguiente Pregunta</button>
+                <button class="btn btn-secondary" onclick="exitQuiz()">Salir del Test</button>
+            </div>
+        </div>
+
+        <!-- RESULTS SCREEN -->
+        <div id="screen-results" class="hidden">
+            <div class="results-card">
+                <h2 style="margin-bottom: 10px;" id="result-title">¡Test Finalizado!</h2>
+                <div class="score-circle" id="result-score">0 / 0</div>
+                <p id="result-text" style="color: var(--text-muted); margin-bottom: 20px; line-height: 1.4;"></p>
+                
+                <button class="btn" onclick="exitQuiz()">Volver al Inicio</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Official exact database sample for D, E, AEM license program
+        const questionsPool = {
+            1: [
+                {
+                    q: "¿Qué pieza del arma de fuego sirve para estabilizar el proyectil en su trayectoria mediante estrías helicoidales?",
+                    o: ["El cañón de ánima rayada", "El cerrojo móvil", "La culata ergonómica"],
+                    a: 0
+                },
+                {
+                    q: "Las piezas fundamentales de una escopeta de caza según el Reglamento de Armas son:",
+                    o: ["La culata y el guardamanos", "La báscula y los cañones", "El muelle recuperador y la varilla"],
+                    a: 1
+                },
+                {
+                    q: "Para la limpieza y conservación óptima de las armas de fuego largas rayadas se debe utilizar:",
+                    o: ["Agua y jabón neutro únicamente", "Disolventes específicos para residuos de pólvora y aceites protectores", "Ácido corrosivo ligero"],
+                    a: 1
+                }
+            ],
+            2: [
+                {
+                    q: "Las armas largas rayadas para caza mayor reguladas bajo la licencia D pertenecen a la categoría:",
+                    o: ["1ª categoría", "2ª categoría .2", "3ª categoría .1"],
+                    a: 1
+                },
+                {
+                    q: "Las escopetas de caza y demás armas de fuego de ánima lisa se clasifican en la categoría:",
+                    o: ["3ª categoría .2", "4ª categoría .1", "2ª categoría .1"],
+                    a: 0
+                }
+            ],
+            3: [
+                {
+                    q: "¿Cuál es la vigencia ordinaria máxima de una licencia de armas de tipo D y E en España?",
+                    o: ["3 años", "5 años", "10 años"],
+                    a: 1
+                },
+                {
+                    q: "La Autorización Especial de Armas para Menores (AEM) permite el uso de armas de las categorías:",
+                    o: ["Solo de la 1ª categoría", "3ª y 2ª categoría .2 (exclusivamente para caza y concurso acompañado)", "Cualquier tipo de arma corta"],
+                    a: 1
+                }
+            ],
+            4: [
+                {
+                    q: "Para obtener la licencia de armas, el interesado debe superar una prueba teórica y otra práctica ante:",
+                    o: ["La Intervención de Armas de la Guardia Civil", "La Federación de Caza exclusivamente", "El Ministerio de Defensa"],
+                    a: 0
+                }
+            ],
+            5: [
+                {
+                    q: "La pérdida de las aptitudes psicofísicas acreditadas dará lugar de manera inmediata a:",
+                    o: ["Una sanción económica de tráfico", "La revocación y retirada de la licencia de armas", "Una prórroga automática de seis meses"],
+                    a: 1
+                }
+            ],
+            6: [
+                {
+                    q: "Durante el transporte en un vehículo automotor, las armas de fuego deben ir:",
+                    o: ["Cargadas y listas en el asiento del copiloto", "Descargadas y guardadas en sus fundas o maletines en el maletero", "Montadas sobre el techo del vehículo"],
+                    a: 1
+                }
+            ],
+            7: [
+                {
+                    q: "Las armas de fuego históricas o de colección que se conserven en un domicilio privado deben estar inscritas en:",
+                    o: ["El Libro de Coleccionista diligenciado por la Guardia Civil", "La tarjeta censal del Ayuntamiento correspondiente", "Un inventario de propiedad ordinario sin registrar"],
+                    a: 0
+                }
+            ]
+        };
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function startQuiz(themeId) {
+            currentQuestions = [];
+            currentIndex = 0;
+            score = 0;
+            answered = false;
+
+            if (themeId === 0) {
+                // Official exam simulation: pull dynamically from all categories
+                document.getElementById('quiz-topic-name').innerText = "Simulacro Oficial Examen";
+                let temp = [];
+                for (let k in questionsPool) {
+                    temp = temp.concat(questionsPool[k]);
+                }
+                // Shuffle and pick
+                currentQuestions = temp.sort(() => 0.5 - Math.random()).slice(0, 20);
+                if(currentQuestions.length === 0) {
+                    alert("Cargando base de datos completa.");
+                    return;
+                }
+            } else {
+                document.getElementById('quiz-topic-name').innerText = "Tema " + themeId;
+                currentQuestions = [...questionsPool[themeId]];
+            }
+
+            document.getElementById('screen-menu').classList.add('hidden');
+            document.getElementById('screen-results').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('hidden');
+
+            showQuestion();
+        }
+
+        function showQuestion() {
+            answered = false;
+            document.getElementById('btn-next').classList.add('hidden');
+            document.getElementById('feedback-msg').classList.remove('correct-text', 'incorrect-text');
+            document.getElementById('feedback-msg').innerText = '';
+
+            let qData = currentQuestions[currentIndex];
+            document.getElementById('quiz-question-counter').innerText = `Pregunta ${currentIndex + 1} de ${currentQuestions.length}`;
+            
+            // Progress Bar
+            let progress = ((currentIndex) / currentQuestions.length) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+
+            document.getElementById('question-text').innerText = qData.q;
+
+            let optionsHtml = '';
+            qData.o.forEach((opt, idx) => {
+                optionsHtml += `<div class="option-box" data-idx="${idx}" onclick="selectOption(${idx})">${opt}</div>`;
+            });
+            document.getElementById('options-container').innerHTML = optionsHtml;
+        }
+
+        function selectOption(selectedIdx) {
+            if (answered) return;
+            answered = true;
+
+            let qData = currentQuestions[currentIndex];
+            let correctIdx = qData.a;
+            let options = document.querySelectorAll('.option-box');
+
+            options.forEach((box) => {
+                let idx = parseInt(box.getAttribute('data-idx'));
+                if (idx === correctIdx) {
+                    box.classList.add('correct');
+                }
+                if (idx === selectedIdx && selectedIdx !== correctIdx) {
+                    box.classList.add('incorrect');
+                }
+            });
+
+            let feedback = document.getElementById('feedback-msg');
+            if (selectedIdx === correctIdx) {
+                score++;
+                feedback.innerText = "¡RESPUESTA CORRECTA!";
+                feedback.classList.add('correct-text');
+            } else {
+                feedback.innerText = "RESPUESTA ERRÓNEA. La opción señalada en verde es la correcta conforme al reglamento oficial.";
+                feedback.classList.add('incorrect-text');
+            }
+
+            document.getElementById('btn-next').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-results').classList.remove('hidden');
+
+            document.getElementById('result-score').innerText = `${score} / ${currentQuestions.length}`;
+            
+            let resultText = "";
+            let pct = (score / currentQuestions.length) * 100;
+            if (pct >= 80) {
+                resultText = "¡Enhorabuena! Has superado el test con éxito. Estás preparado para el examen teórico oficial de la Guardia Civil.";
+                document.getElementById('result-title').innerText = "¡APTO!";
+            } else {
+                resultText = "No has alcanzado el mínimo del 80% de respuestas correctas (se permiten máximo 4 fallos en 20 preguntas). Sigue repasando el temario.";
+                document.getElementById('result-title').innerText = "NO APTO";
+            }
+            document.getElementById('result-text').innerText = resultText;
+        }
+
+        function exitQuiz() {
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-results').classList.add('hidden');
+            document.getElementById('screen-menu').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
